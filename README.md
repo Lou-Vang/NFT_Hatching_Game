@@ -43,13 +43,16 @@ Mints NFTs, stores ownership on-chain, and supports future transfers or trading.
 ## Stakeholders
 
 ### Player
-Purchases eggs, hatches animals, owns NFTs, and may trade them.
+Purchases eggs, hatches NFT animals, owns digital assets, and may trade NFTs with other players.
 
 ### Smart Contract System
-Executes blockchain logic, rarity generation, NFT minting, and ownership management.
+Executes blockchain logic, validates transactions, generates random rarity levels, mints NFTs, and manages ownership records.
 
 ### Marketplace (Optional)
-Allows players to list, trade, or transfer NFT animals.
+Allows players to list, trade, sell, or transfer NFT animals between users.
+
+### Ethereum Blockchain Network
+Stores NFT ownership, rarity data, and transaction history in a decentralised and tamper-resistant manner.
 
 ## Business Process Overview
 
