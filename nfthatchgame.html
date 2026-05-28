@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>NFT Hatch Game</title>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.2/dist/ethers.umd.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600&display=swap');
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Rajdhani', sans-serif;
+      background: #0a0e1a;
+      color: #e0f0ff;
+      min-height: 100vh;
+      padding: 40px 20px;
+      background-image:
+        radial-gradient(ellipse at 20% 50%, rgba(22, 75, 115, 0.3) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 20%, rgba(0, 200, 255, 0.1) 0%, transparent 50%);
+    }
+
+    .container {
+      max-width: 720px;
+      margin: auto;
+    }
+
+    h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 2.2rem;
+      font-weight: 900;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      background: linear-gradient(90deg, #00c8ff, #ffffff, #00c8ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 6px;
+    }
+
+    .subtitle {
+      font-size: 0.9rem;
+      color: #4a8aaa;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 30px;
+    }
+
+    .network-badge {
+      display: inline-block;
+      background: rgba(0, 200, 255, 0.1);
+      border: 1px solid #00c8ff44;
+      color: #00c8ff;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      letter-spacing: 2px;
+      margin-bottom: 24px;
+    }
+
+    .wallet-panel {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(0, 200, 255, 0.15);
+      border-radius: 16px;
+      padding: 20px 24px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .wallet-info { flex: 1; min-width: 200px; }
+    .wallet-label { font-size: 0.7rem; letter-spacing: 2px; color: #4a8aaa; text-transform: uppercase; margin-bottom: 4px; }
+    .wallet-address { font-family: 'Orbitron', sans-serif; font-size: 0.8rem; color: #00c8ff; word-break: break-all; }
+
+    .status-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #ff4444;
+      display: inline-block;
+      margin-right: 8px;
+      transition: background 0.3s;
+    }
+    .status-dot.connected { background: #00ff88; box-shadow: 0 0 8px #00ff88; }
+
+    button {
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 600;
+      font-size: 0.85rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #164b73, #00c8ff22);
+      color: #00c8ff;
+      border: 1px solid #00c8ff55;
+    }
+    .btn-primary:hover { background: linear-gradient(135deg, #1a5f8f, #00c8ff33); box-shadow: 0 0 16px #00c8ff33; }
+
+    .btn-connect {
+      background: linear-gradient(135deg, #00c8ff22, #00c8ff44);
+      color: #00c8ff;
+      border: 1px solid #00c8ff;
+      padding: 10px 24px;
+    }
+    .btn-connect:hover { background: #00c8ff; color: #0a0e1a; }
+
+    .btn-danger {
+      background: rgba(255, 100, 100, 0.1);
+      color: #ff6464;
+      border: 1px solid #ff646444;
+    }
+    .btn-danger:hover { background: rgba(255, 100, 100, 0.2); }
+
+    .actions {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .panel {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(0, 200, 255, 0.1);
+      border-radius: 16px;
+      padding: 20px 24px;
+      margin-bottom: 16px;
+    }
+
+    .panel h3 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.75rem;
+      letter-spacing: 3px;
+      color: #4a8aaa;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .egg-count {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 2.5rem;
+      font-weight: 900;
+      color: #00c8ff;
+    }
+
+    .nft-card {
+      background: rgba(0, 200, 255, 0.05);
+      border: 1px solid rgba(0, 200, 255, 0.2);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 10px;
+    }
+
+    .nft-card p { margin-bottom: 6px; font-size: 0.9rem; }
+    .nft-card b { color: #00c8ff; font-weight: 600; }
+
+    .rarity {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .rarity-common { background: rgba(150,150,150,0.2); color: #aaa; border: 1px solid #aaa4; }
+    .rarity-rare { background: rgba(0,100,255,0.2); color: #4488ff; border: 1px solid #4488ff44; }
+    .rarity-epic { background: rgba(150,0,255,0.2); color: #aa44ff; border: 1px solid #aa44ff44; }
+    .rarity-legendary { background: rgba(255,180,0,0.2); color: #ffb400; border: 1px solid #ffb40044; }
+
+    #toast {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      background: #164b73;
+      border: 1px solid #00c8ff44;
+      color: #e0f0ff;
+      padding: 14px 20px;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.3s;
+      pointer-events: none;
+      max-width: 300px;
+      z-index: 999;
+    }
+    #toast.show { opacity: 1; transform: translateY(0); }
+
+    .loading { color: #4a8aaa; font-size: 0.85rem; letter-spacing: 1px; }
+
+    #metamask-warning {
+      background: rgba(255, 100, 0, 0.1);
+      border: 1px solid rgba(255, 100, 0, 0.4);
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      display: none;
+    }
+    #metamask-warning p { color: #ff8844; font-size: 0.9rem; }
+    #metamask-warning a { color: #ffaa66; }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>NFT Hatch</h1>
+    <p class="subtitle">Egg Hatch Game</p>
+    <div class="network-badge">⬡ SEPOLIA</div>
+
+    <div id="metamask-warning">
+      <p>⚠️ MetaMask not detected. Please <a href="https://metamask.io/download/" target="_blank">install MetaMask</a> and refresh this page. <br><br><b>Note:</b> This file must be opened directly in your browser, not inside an iframe or sandbox.</p>
+    </div>
+
+    <div class="wallet-panel">
+      <div class="wallet-info">
+        <div class="wallet-label"><span class="status-dot" id="statusDot"></span>Wallet</div>
+        <div class="wallet-address" id="wallet">Not connected</div>
+      </div>
+      <button class="btn-connect" onclick="connectWallet()">Connect MetaMask</button>
+    </div>
+
+    <div class="actions">
+      <button class="btn-primary" onclick="buyEgg()">Buy Egg (0.01 SepoliaETH)</button>
+      <button class="btn-primary" onclick="checkEggBalance()">Check Balance</button>
+      <button class="btn-primary" onclick="hatchEgg()"> Hatch Egg</button>
+      <button class="btn-primary" onclick="loadMyNFTs()">Load My NFTs</button>
+    </div>
+
+    <div class="panel">
+      <h3>Egg Balance / Value</h3>
+      <div class="egg-count" id="eggBalance">—</div>
+    </div>
+
+    <div class="panel">
+      <h3>My Animals</h3>
+      <div id="animals"><p class="loading">No animals loaded yet.</p></div>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+
+  <script>
+    let provider, signer, userAddress;
+
+    const eggContractAddress   = "0xB8bC50F3D70A3a836BC0823d3E5BE6B4280cECA4";
+    const hatchContractAddress = "0xB58137755a3a85b6dA41646Aa8eFad7dbFa9658f";
+    const nftContractAddress   = "0xD14f2047a0edbB66058890FF96a2E6C9C8674b84";
+
+    const eggABI = [
+      "function buyEgg() public payable",
+      "function getEggBalance(address player) public view returns (uint256)"
+    ];
+    const hatchABI = ["function hatchEgg() public"];
+    const nftABI = [
+      "function getMyNFTs(address player) public view returns (uint256[] memory)",
+      "function getAnimal(uint256 tokenId) public view returns (uint256, string memory, string memory, address)"
+    ];
+
+    function showToast(msg, duration = 3000) {
+      const t = document.getElementById("toast");
+      t.innerText = msg;
+      t.classList.add("show");
+      setTimeout(() => t.classList.remove("show"), duration);
+    }
+
+    function requireWallet() {
+      if (!userAddress) { showToast("⚠️ Connect your wallet first"); return false; }
+      return true;
+    }
+
+    // Check MetaMask on load
+    window.addEventListener('load', () => {
+      if (!window.ethereum) {
+        document.getElementById("metamask-warning").style.display = "block";
+      }
+    });
+
+    async function connectWallet() {
+      if (!window.ethereum) {
+        document.getElementById("metamask-warning").style.display = "block";
+        showToast("MetaMask not found. See warning above.");
+        return;
+      }
+
+      try {
+        provider = new ethers.BrowserProvider(window.ethereum);
+
+        // Request accounts
+        await provider.send("eth_requestAccounts", []);
+        signer = await provider.getSigner();
+        userAddress = await signer.getAddress();
+
+        // Switch to Sepolia (chainId 0xaa36a7 = 11155111)
+        try {
+          await window.ethereum.request({
+            method: "wallet_switchEthereumChain",
+            params: [{ chainId: "0xaa36a7" }]
+          });
+        } catch (switchErr) {
+          if (switchErr.code === 4902) {
+            await window.ethereum.request({
+              method: "wallet_addEthereumChain",
+              params: [{
+                chainId: "0xaa36a7",
+                chainName: "Sepolia Testnet",
+                rpcUrls: ["https://rpc.sepolia.org"],
+                nativeCurrency: { name: "ETH", symbol: "ETH", decimals: 18 },
+                blockExplorerUrls: ["https://sepolia.etherscan.io"]
+              }]
+            });
+          }
+        }
+
+        document.getElementById("wallet").innerText = userAddress;
+        document.getElementById("statusDot").classList.add("connected");
+        showToast("✅ Wallet connected!");
+        checkEggBalance();
+
+        // Listen for account changes
+        window.ethereum.on("accountsChanged", (accounts) => {
+          if (accounts.length === 0) {
+            document.getElementById("wallet").innerText = "Not connected";
+            document.getElementById("statusDot").classList.remove("connected");
+            userAddress = null;
+          } else {
+            userAddress = accounts[0];
+            document.getElementById("wallet").innerText = userAddress;
+          }
+        });
+
+      } catch (err) {
+        showToast("❌ " + (err.message || "Connection failed"));
+        console.error(err);
+      }
+    }
+
+    async function buyEgg() {
+      if (!requireWallet()) return;
+      try {
+        const contract = new ethers.Contract(eggContractAddress, eggABI, signer);
+        showToast("⏳ Buying egg...", 8000);
+        const tx = await contract.buyEgg({ value: ethers.parseEther("0.01") });
+        await tx.wait();
+        showToast("🥚 Egg bought!");
+        checkEggBalance();
+      } catch (err) {
+        showToast("❌ " + (err.reason || err.message || "Buy failed"));
+        console.error(err);
+      }
+    }
+
+    async function checkEggBalance() {
+      if (!requireWallet()) return;
+
+      try {
+        const contract = new ethers.Contract(eggContractAddress, eggABI, provider);
+        const balance = await contract.getEggBalance(userAddress);
+
+        const eggCount = Number(balance);
+        const eggValue = eggCount * 0.01;
+
+        document.getElementById("eggBalance").innerText =
+          `${eggCount} egg = ${eggValue.toFixed(2)} SepoliaETH`;
+
+        showToast(`✅ Egg balance: ${eggCount} egg = ${eggValue.toFixed(2)} SepoliaETH`);
+
+      } catch (err) {
+        document.getElementById("eggBalance").innerText = "Balance check failed";
+        showToast("❌ Balance check failed");
+        console.error(err);
+      }
+    }
+
+    async function hatchEgg() {
+      if (!requireWallet()) return;
+      try {
+        const contract = new ethers.Contract(hatchContractAddress, hatchABI, signer);
+        showToast("⏳ Hatching egg...", 8000);
+        const tx = await contract.hatchEgg();
+        await tx.wait();
+        showToast("🐣 Egg hatched!");
+        checkEggBalance();
+        loadMyNFTs();
+      } catch (err) {
+        showToast("❌ " + (err.reason || err.message || "Hatch failed"));
+        console.error(err);
+      }
+    }
+
+    function rarityClass(rarity) {
+      const r = rarity.toLowerCase();
+      if (r.includes("legendary")) return "rarity-legendary";
+      if (r.includes("epic")) return "rarity-epic";
+      if (r.includes("rare")) return "rarity-rare";
+      return "rarity-common";
+    }
+
+    async function loadMyNFTs() {
+      if (!requireWallet()) return;
+      const container = document.getElementById("animals");
+      container.innerHTML = '<p class="loading">Loading...</p>';
+      try {
+        const contract = new ethers.Contract(nftContractAddress, nftABI, provider);
+        const tokenIds = await contract.getMyNFTs(userAddress);
+
+        if (tokenIds.length === 0) {
+          container.innerHTML = '<p class="loading">No animals yet. Hatch an egg!</p>';
+          return;
+        }
+
+        let html = "";
+        for (let i = 0; i < tokenIds.length; i++) {
+          const animal = await contract.getAnimal(tokenIds[i]);
+          const rc = rarityClass(animal[2]);
+          html += `
+            <div class="nft-card">
+              <p><b>Token ID:</b> ${animal[0]}</p>
+              <p><b>Animal:</b> ${animal[1]}</p>
+              <p><b>Rarity:</b> <span class="rarity ${rc}">${animal[2]}</span></p>
+              <p><b>Owner:</b> ${animal[3].slice(0,6)}...${animal[3].slice(-4)}</p>
+            </div>`;
+        }
+        container.innerHTML = html;
+      } catch (err) {
+        container.innerHTML = '<p class="loading">Failed to load NFTs.</p>';
+        showToast("❌ " + (err.message || "Load failed"));
+        console.error(err);
+      }
+    }
+  </script>
+</body>
+</html>
